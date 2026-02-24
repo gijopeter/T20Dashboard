@@ -63,7 +63,7 @@ else:
 
 import numpy as np
 
-st.header("🏆 Overall Leaderboard with Title Probability")
+st.header("🏆 Overall Leaderboard")
 
 # --- Medal assignment
 def medal(rank):
