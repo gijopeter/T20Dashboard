@@ -3,8 +3,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 
-st.set_page_config(page_title="GEC Thrissur ECE - T20 Leaderboard", layout="wide")
-st.title("🏏 GEC Thrissur ECE - T20 Prediction Leaderboard")
+st.set_page_config(page_title="Global ECE - T20 Prediction", layout="wide")
+st.title("🏏 Global ECE - T20 Prediction ")
 
 st.markdown("---")
 
