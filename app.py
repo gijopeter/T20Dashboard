@@ -61,37 +61,43 @@ st.plotly_chart(fig_table, use_container_width=True)
 st.header("🔥 Tracker – Recent Performance")
 
 # Determine the last 5 games, or fewer if not enough data
-num_games = min(5, len(game_columns)) # <<< CHANGED FROM 3 to 5
+num_games = min(5, len(game_columns))
 last_n_games = game_columns[-num_games:]
 
-if num_games == 0:
-    st.warning("No game data available to show recent performance.")
+if num_games < 2: # A line chart needs at least 2 points to draw a line
+    st.warning("Not enough game data to draw a trend line.")
 else:
     # Get the names of the top 7 players
     top7_names = df.head(7)["Name"]
     
-    # Filter the original dataframe for top 7 players and last 5 games
-    heatmap_df = df_original[df_original["Name"].isin(top7_names)].copy()
-    heatmap_df = heatmap_df[["Name"] + list(last_n_games)]
+    # Filter the original dataframe for the top 7 players
+    tracker_df = df_original[df_original["Name"].isin(top7_names)].copy()
     
-    # Calculate the total points for the last 5 games
-    heatmap_df["Total"] = heatmap_df[last_n_games].sum(axis=1)
-    
-    # Sort the dataframe by the new 'Total' column
-    heatmap_df = heatmap_df.sort_values(by="Total", ascending=False)
-    
-    # Set 'Name' as the index for better display
-    heatmap_df = heatmap_df.set_index("Name")
+    # Calculate the cumulative sum of points across all games
+    tracker_df[game_columns] = tracker_df[game_columns].cumsum(axis=1)
 
-    # Style the dataframe to create the heatmap
-    styled_df = heatmap_df.style.background_gradient(
-        cmap='Greens',
-        subset=last_n_games
-    ).format(
-        '{:.0f}' # Format all numbers as integers
+    # Create the line chart figure
+    fig_line_chart = go.Figure()
+
+    for _, row in tracker_df.iterrows():
+        fig_line_chart.add_trace(go.Scatter(
+            x=last_n_games,
+            y=row[last_n_games],
+            mode='lines+markers',
+            name=row["Name"],
+            line=dict(
+                dash='dot'  # <<< THIS CREATES THE DOTTED LINE
+            )
+        ))
+
+    fig_line_chart.update_layout(
+        title="Top 7 Cumulative Points – Last 5 Games",
+        xaxis_title="Prediction Games",
+        yaxis_title="Cumulative Points",
+        height=600,
+        template="plotly_white",
+        hovermode="x unified" # Shows all player points for a given game on hover
     )
-    
-    # Display the styled dataframe
-    st.dataframe(styled_df, use_container_width=True)
-    st.caption(f"Color shows performance in the last {num_games} games. Higher scores are darker green.")
+
+    st.plotly_chart(fig_line_chart, use_container_width=True)
 
