@@ -54,16 +54,17 @@ df["Medal"] = df["Rank"].apply(medal)
 st.header("🏆 Overall Leaderboard")
 leaderboard_display = df[["Rank", "Medal", "Name", "Total Points"]]
 
-# Dynamically calculate table height to avoid scrolling
-table_height = (len(leaderboard_display) * 30) + 50
+# Display with left-aligned columns
 
-fig_table = go.Figure(data=[go.Table(
-    columnwidth=[50, 50, 250, 120],
-    header=dict(values=["Rank", "Medal", "Name", "Total Points"], fill_color="#1f2937", font=dict(color="white", size=14), align="center"),
-    cells=dict(values=[leaderboard_display["Rank"], leaderboard_display["Medal"], leaderboard_display["Name"], leaderboard_display["Total Points"]], fill_color="white", align="center", height=30, font=dict(size=12))
-)])
-fig_table.update_layout(height=table_height, margin=dict(l=10, r=10, t=5, b=5))
-st.plotly_chart(fig_table, use_container_width=True)
+# Use pandas styling to left-align all columns
+st.dataframe(
+    leaderboard_display.style.set_properties(**{
+        'text-align': 'left',
+        'font-size': '14px'
+    }),
+    use_container_width=True,
+    hide_index=True
+)
 
 
 # =================================================================
