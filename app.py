@@ -54,17 +54,14 @@ df["Medal"] = df["Rank"].apply(medal)
 st.header("🏆 Overall Leaderboard")
 leaderboard_display = df[["Rank", "Medal", "Name", "Total Points"]]
 
-# --- NEW: Dynamically calculate table height to avoid scrolling ---
-# Cell height is 30, Header is ~40-50px. Add a little padding.
+# Dynamically calculate table height to avoid scrolling
 table_height = (len(leaderboard_display) * 30) + 50
-# --- END OF CHANGE ---
 
 fig_table = go.Figure(data=[go.Table(
     columnwidth=[50, 50, 250, 120],
     header=dict(values=["Rank", "Medal", "Name", "Total Points"], fill_color="#1f2937", font=dict(color="white", size=14), align="center"),
     cells=dict(values=[leaderboard_display["Rank"], leaderboard_display["Medal"], leaderboard_display["Name"], leaderboard_display["Total Points"]], fill_color="white", align="center", height=30, font=dict(size=12))
 )])
-# Use the new dynamic height
 fig_table.update_layout(height=table_height, margin=dict(l=10, r=10, t=5, b=5))
 st.plotly_chart(fig_table, use_container_width=True)
 
@@ -118,3 +115,45 @@ else:
     )
 
     st.plotly_chart(fig_line_chart, use_container_width=True)
+
+
+# =================================================================
+# 🔍 INDIVIDUAL PLAYER ANALYSIS
+# =================================================================
+st.header("🔍 Individual Player Analysis")
+
+# --- NEW: Get a list of all player names, sorted alphabetically ---
+all_players = sorted(df_original["Name"].tolist())
+# --- END OF CHANGE ---
+
+# Create a dropdown menu
+selected_player = st.selectbox("Select a Player to Analyze", options=all_players)
+
+if selected_player:
+    # Filter the dataframe for the selected player
+    player_data = df_original[df_original["Name"] == selected_player]
+    
+    # Extract just the game columns for the chart
+    player_scores = player_data[game_columns].T
+    player_scores.columns = ["Points"]
+    
+    # Create the bar chart
+    fig_bar_individual = go.Figure()
+    
+    fig_bar_individual.add_trace(go.Bar(
+        x=player_scores.index, # Game names
+        y=player_scores["Points"], # Points for each game
+        text=player_scores["Points"],
+        textposition='auto',
+        marker_color='#2ecc71'
+    ))
+    
+    fig_bar_individual.update_layout(
+        title=f"Game-by-Game Performance for {selected_player}",
+        xaxis_title="Prediction Game",
+        yaxis_title="Points Scored",
+        height=500,
+        template="plotly_white"
+    )
+    
+    st.plotly_chart(fig_bar_individual, use_container_width=True)
