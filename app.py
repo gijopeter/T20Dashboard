@@ -74,12 +74,18 @@ last_n_games = game_columns[-num_games:]
 if num_games < 2: # A line chart needs at least 2 points to draw a line
     st.warning("Not enough game data to draw a trend line.")
 else:
-    # Get the names of the top 7 players
-    top7_names = df.head(7)["Name"]
+    # Get the names of the top 7 players IN RANK ORDER
+    top7_names = df.head(7)["Name"].tolist()
     
     # Filter the original dataframe for the top 7 players
     tracker_df = df_original[df_original["Name"].isin(top7_names)].copy()
     
+    # --- NEW: Sort the tracker_df to match the rank order ---
+    # This ensures the legend is created in the correct order
+    tracker_df['Name'] = pd.Categorical(tracker_df['Name'], categories=top7_names, ordered=True)
+    tracker_df = tracker_df.sort_values('Name')
+    # --- END OF CHANGE ---
+
     # Calculate the cumulative sum of points across all games
     tracker_df[game_columns] = tracker_df[game_columns].cumsum(axis=1)
 
@@ -107,4 +113,3 @@ else:
     )
 
     st.plotly_chart(fig_line_chart, use_container_width=True)
-
