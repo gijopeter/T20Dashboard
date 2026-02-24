@@ -58,14 +58,12 @@ else:
     df["Rank Change"] = None
 
 # =================================================================
-# 🏆 OVERALL LEADERBOARD + MONTE CARLO TITLE WIN PROBABILITY
+# 🏆 OVERALL LEADERBOARD – LIGHT THEME, RANK + ARROWS + MEDALS
 # =================================================================
-
-import numpy as np
 
 st.header("🏆 Overall Leaderboard")
 
-# --- Medal assignment
+# Medal assignment
 def medal(rank):
     if rank == 1: return "🥇"
     if rank == 2: return "🥈"
@@ -74,46 +72,12 @@ def medal(rank):
 
 df["Medal"] = df["Rank"].apply(medal)
 
-# --- Monte Carlo simulation for title probabilities
-def simulate_title_probabilities(df_original, game_columns, remaining_games=20, simulations=5000):
-    df_mc = df_original.copy()
-    players = df_mc["Name"].values
-    current_totals = df_mc[game_columns].sum(axis=1).values
-
-    means = df_mc[game_columns].mean(axis=1).values
-    stds = df_mc[game_columns].std(axis=1).values
-    stds = np.where(stds==0, 1, stds)
-
-    win_counts = np.zeros(len(players))
-
-    for _ in range(simulations):
-        simulated_totals = current_totals.copy()
-        for i in range(len(players)):
-            future_points = np.random.normal(loc=means[i], scale=stds[i], size=remaining_games)
-            future_points = np.maximum(future_points, 0)
-            simulated_totals[i] += future_points.sum()
-        winner_index = np.argmax(simulated_totals)
-        win_counts[winner_index] += 1
-
-    probabilities = win_counts / simulations
-    df_prob = pd.DataFrame({
-        "Name": players,
-        "Title Probability (%)": (probabilities*100).round(2)
-    })
-    return df_prob
-
-# Run simulation (you can change remaining_games)
-remaining_games = 5
-prob_df = simulate_title_probabilities(df_original, game_columns, remaining_games=remaining_games, simulations=5000)
-
-# Merge probabilities into leaderboard
-df = df.merge(prob_df, on="Name", how="left")
-
-# --- Format Rank + Arrow
+# Format Rank + Arrow
 def formatted_rank(row):
     rank_number = f"<b>{row['Rank']}</b>"
     spacer = "&nbsp;"*6
     change = row.get("Rank Change", None)
+    
     if pd.isna(change):
         arrow = ""
     elif change > 0:
@@ -122,11 +86,12 @@ def formatted_rank(row):
         arrow = f'{spacer}<span style="color:red;">⬇ {int(change)}</span>'
     else:
         arrow = f'{spacer}<span style="color:gray;">→ 0</span>'
+    
     return rank_number + arrow
 
 df["Rank Display"] = df.apply(formatted_rank, axis=1)
 
-# --- Build HTML table (light theme)
+# Build HTML table
 html = "<table style='width:100%; border-collapse: collapse; font-size:14px; background-color:white; color:black;'>"
 # Header
 html += "<tr style='background-color:#1f2937; color:white;'>"
@@ -134,7 +99,6 @@ html += "<th style='padding:8px; text-align:center;'>Rank</th>"
 html += "<th style='padding:8px; text-align:center;'>Medal</th>"
 html += "<th style='padding:8px; text-align:left;'>Name</th>"
 html += "<th style='padding:8px; text-align:center;'>Total Points</th>"
-html += "<th style='padding:8px; text-align:center;'>Title Probability (%)</th>"
 html += "</tr>"
 
 # Rows
@@ -154,7 +118,6 @@ for _, row in df.iterrows():
     html += f"<td style='padding:8px; text-align:center;'>{row['Medal']}</td>"
     html += f"<td style='padding:8px; text-align:left;'>{row['Name']}</td>"
     html += f"<td style='padding:8px; text-align:center;'>{row['Total Points']}</td>"
-    html += f"<td style='padding:8px; text-align:center;'>{row['Title Probability (%)']}</td>"
     html += "</tr>"
 
 html += "</table>"
