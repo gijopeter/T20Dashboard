@@ -53,12 +53,19 @@ df["Medal"] = df["Rank"].apply(medal)
 # ===============================
 st.header("🏆 Overall Leaderboard")
 leaderboard_display = df[["Rank", "Medal", "Name", "Total Points"]]
+
+# --- NEW: Dynamically calculate table height to avoid scrolling ---
+# Cell height is 30, Header is ~40-50px. Add a little padding.
+table_height = (len(leaderboard_display) * 30) + 50
+# --- END OF CHANGE ---
+
 fig_table = go.Figure(data=[go.Table(
     columnwidth=[50, 50, 250, 120],
     header=dict(values=["Rank", "Medal", "Name", "Total Points"], fill_color="#1f2937", font=dict(color="white", size=14), align="center"),
     cells=dict(values=[leaderboard_display["Rank"], leaderboard_display["Medal"], leaderboard_display["Name"], leaderboard_display["Total Points"]], fill_color="white", align="center", height=30, font=dict(size=12))
 )])
-fig_table.update_layout(height=500, margin=dict(l=10, r=10, t=5, b=5))
+# Use the new dynamic height
+fig_table.update_layout(height=table_height, margin=dict(l=10, r=10, t=5, b=5))
 st.plotly_chart(fig_table, use_container_width=True)
 
 
@@ -80,11 +87,9 @@ else:
     # Filter the original dataframe for the top 7 players
     tracker_df = df_original[df_original["Name"].isin(top7_names)].copy()
     
-    # --- NEW: Sort the tracker_df to match the rank order ---
-    # This ensures the legend is created in the correct order
+    # Sort the tracker_df to match the rank order for the legend
     tracker_df['Name'] = pd.Categorical(tracker_df['Name'], categories=top7_names, ordered=True)
     tracker_df = tracker_df.sort_values('Name')
-    # --- END OF CHANGE ---
 
     # Calculate the cumulative sum of points across all games
     tracker_df[game_columns] = tracker_df[game_columns].cumsum(axis=1)
