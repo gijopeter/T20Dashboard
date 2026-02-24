@@ -6,6 +6,13 @@ import os
 st.set_page_config(page_title="GEC Thrissur ECE - T20 Leaderboard", layout="wide")
 st.title("🏏 GEC Thrissur ECE - T20 Prediction Leaderboard")
 
+# --- Divider ---
+st.markdown("---")
+
+
+# =================================================================
+# 📊 DATA LOADING AND PREPARATION
+# =================================================================
 EXCEL_FILE = "points.xlsx"
 
 if os.path.exists(EXCEL_FILE):
@@ -86,7 +93,7 @@ else:
             mode='lines+markers',
             name=row["Name"],
             line=dict(
-                dash='dot'  # <<< THIS CREATES THE DOTTED LINE
+                dash='dot'
             )
         ))
 
@@ -96,7 +103,7 @@ else:
         yaxis_title="Cumulative Points",
         height=600,
         template="plotly_white",
-        hovermode="x unified" # Shows all player points for a given game on hover
+        hovermode="x unified"
     )
 
     st.plotly_chart(fig_line_chart, use_container_width=True)
