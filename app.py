@@ -47,7 +47,7 @@ if os.path.exists(PREVIOUS_FILE):
     prev_df = prev_df.rename(columns={prev_name_col: "Name"})
     prev_game_columns = prev_df.columns[1:]
 
-    prev_df["Total Points"] = prev_df[prev_game_columns].sum(axis=1)
+    prev_df["Total Points"] = prev_df[prev_game_columns].sum(axis=1).astype(int)
     prev_df = prev_df.sort_values(by=["Total Points", "Name"], ascending=[False, True])
     prev_df["Prev Rank"] = prev_df["Total Points"].rank(method="min", ascending=False).astype(int)
 
